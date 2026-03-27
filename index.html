@@ -9,7 +9,7 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root { 
+  :root {
     --font-body: 'DM Sans', sans-serif;
     --font-display: 'Syne', sans-serif;
     --color-navy: #1e3057;
@@ -352,6 +352,30 @@
       siw.style.background='rgba(30,48,87,0.07)';siw.style.borderColor='rgba(30,48,87,0.2)';
       sis.innerHTML=SVG_SPIN_STATUS;stitle.textContent='Fluxo em execução';sdesc.textContent='Conectando à API da Conta Azul…';
       setTimeout(function(){sdesc.textContent='Importando lançamentos financeiros…'},1500);
+
+      /* ── Disparo real para o webhook do n8n ── */
+      fetch('https://n8n-darkay-u65509.vm.elestio.app/webhook/lemon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trigger: 'manual', source: 'lemon-consultoria-front' })
+      })
+      .then(function(res) {
+        if (!res.ok) throw new Error('Webhook retornou ' + res.status);
+      })
+      .catch(function(err) {
+        console.error('Erro ao disparar webhook:', err);
+        stitle.textContent='Erro ao conectar';
+        sdesc.textContent='Verifique a conexão e tente novamente';
+        sb.style.borderColor='rgba(220,50,50,0.25)';
+        siw.style.background='rgba(220,50,50,0.08)';
+        siw.style.borderColor='rgba(220,50,50,0.2)';
+        sis.innerHTML='<path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#dc3232" stroke-width="1.5" stroke-linecap="round"/>';
+        btn.style.pointerEvents='';btn.style.opacity='1';
+        spinner.style.display='none';icon.style.display='block';
+        running=false;
+        return;
+      });
+
       setTimeout(function(){
         btn.style.pointerEvents='';btn.style.opacity='1';
         btn.style.background='#3a7a40';btn.style.boxShadow='0 4px 14px rgba(58,122,64,0.35)';
